@@ -1,4 +1,3 @@
-# hi zenn you need to run data-cleaning-2015.R before running this script
 SE <- read.csv("1-dataset-MASTER.csv")
 
 SE_for_kmeans <- SE[,3:13]
