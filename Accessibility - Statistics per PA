@@ -1,4 +1,4 @@
-# To get descriptive statistics of mean, median and mode distances for each PA
+# To get descriptive statistics of mean, median and mode distances for each PA.R
 
 setwd("~/Documents/School/Dissertation/Workspace")
 
