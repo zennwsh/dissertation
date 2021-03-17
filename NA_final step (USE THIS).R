@@ -1,0 +1,45 @@
+# To get descriptive statistics of mean, median and mode distances for each PA
+
+setwd("~/Documents/School/Dissertation/Workspace")
+
+hc <- readOGR("./Datasets/NA", "residences_hc") 
+#this is sg_residences_hc and sg spatial dfs joined in QGIS 
+PA <- readOGR("./Datasets/sg-PAs-fixed", "sg-PAs-fixed")
+
+library(spatialEco)
+
+# NA outputs - hawker centre -----------
+PA <- spTransform(PA, CRS("+init=epsg:4326"))
+hc.PA <- point.in.poly(hc, PA)
+hc.PA.sf <- st_as_sf(hc.PA)
+
+hc.PA.df <- as.data.frame(hc.PA.sf[,7:131])
+hc.PA.df$PLN_AREA_N <- hc.PA.sf$PLN_AREA_N
+
+PLN_AREA <- unique(hc.PA.df$PLN_AREA_N)
+PLN_AREA <- sort(PLN_AREA)
+
+PA.all <- setNames(as.data.frame(
+  matrix(data=NA, ncol=length(PLN_AREA),
+         nrow=ncol(hc.PA.df)*nrow(hc.PA.df))),
+  PLN_AREA) # create a new, blank dataframe 
+
+for (i in 1:40){
+  PA.all.matrix <- subset(hc.PA.df, hc.PA.df$PLN_AREA_N==PLN_AREA[i])
+  interim <- as.vector(as.matrix(PA.all.matrix[,1:125]))
+  interim <- ifelse(interim==0, NA, interim) # changes all values of 0 to NA 
+  PA.all[,i] <- c(interim, rep(NA, nrow(PA.all)-length(interim)))
+} # combines all the cells into one vector per PA 
+
+for (i in 1:ncol(PA.all)){
+  PA.all[,i] <- as.numeric(PA.all[,i])
+} # change to numeric class
+
+write.csv(PA.all, "NA-all-distances-by-PA.csv")
+
+hc.final <- as.data.frame(colMeans(PA.all, na.rm=T)) # PA means
+colnames(hc.final) <- "mean"
+hc.final$min <- apply(PA.all, 2, min.na) # PA minimums 
+hc.final$max <- apply(PA.all, 2, max.na) # PA maximums 
+
+write.csv(round(hc.final,3), "NA-final-table-hc.csv")
